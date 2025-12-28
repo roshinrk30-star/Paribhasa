@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Paribhasha (Bangalore Edition)</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paribhasha | Our Eternal World</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Hind:wght@400;600&family=Meera&display=swap');
+        :root { --lilac: #a78bfa; --glass: rgba(255, 255, 255, 0.94); --completed: #10b981; --text: #4c1d95; }
+        body { margin: 0; font-family: 'Quicksand', 'Hind', sans-serif; background: linear-gradient(135deg, #f3e8ff 0%, #fdf2f8 100%); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+        #musicBtn { position: fixed; top: 20px; right: 20px; background: var(--glass); border: 2px solid white; padding: 15px; border-radius: 50%; cursor: pointer; z-index: 1000; font-size: 1.4rem; box-shadow: 0 8px 25px rgba(167, 139, 250, 0.2); }
+        .playing { animation: pulse 2s infinite; background: #ede9fe !important; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(167, 139, 250, 0); } 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0); } }
+        .status-bar { margin-top: 25px; background: var(--glass); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 50px; display: flex; flex-direction: column; align-items: center; border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .screen { display: none; width: 90%; max-width: 450px; padding: 35px; background: var(--glass); backdrop-filter: blur(30px); border-radius: 45px; margin-top: 20px; text-align: center; box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12); animation: slideIn 0.4s ease-out; }
+        .active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .category-card { background: white; padding: 22px; margin: 15px 0; border-radius: 28px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.4s; border: 2px solid transparent; }
+        .category-card:not(.locked):hover { transform: scale(1.02); border-color: var(--lilac); background: #faf5ff; }
+        .locked { opacity: 0.6; background: #f8fafc; cursor: default; border-color: var(--completed); }
+        .poetry-box { margin: 25px 0; padding: 25px; background: rgba(255,255,255,0.6); border-radius: 25px; border-left: 6px solid var(--lilac); text-align: left; }
+        .v-m { display: block; font-weight: 700; font-size: 1.1rem; color: #5b21b6; margin-bottom: 4px; }
+        .v-kn { display: block; font-family: 'Meera', sans-serif; font-size: 1rem; color: #7c3aed; margin-bottom: 2px; }
+        .v-km { display: block; font-weight: 600; font-size: 0.95rem; color: #7c3aed; opacity: 0.9; margin-bottom: 4px; }
+        .v-e { display: block; font-style: italic; font-size: 0.9rem; color: #6d28d9; opacity: 0.8; }
+        button { padding: 18px; width: 100%; border-radius: 50px; border: none; background: var(--lilac); color: white; font-weight: 800; font-size: 1.1rem; cursor: pointer; margin-top: 15px; }
+        input { width: 85%; padding: 18px; border-radius: 35px; border: 2px solid #e9d5ff; text-align: center; font-size: 1.1rem; margin-bottom: 15px; outline: none; }
+        .timer { font-size: 2.2rem; font-weight: 800; color: var(--lilac); margin: 20px 0; }
+        .heart { position: fixed; z-index: -1; animation: floatUp 12s infinite linear; opacity: 0.25; color: var(--lilac); pointer-events: none; }
+        @keyframes floatUp { from { transform: translateY(110vh) rotate(0deg); } to { transform: translateY(-15vh) rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" preload="auto"></audio>
+    <div id="musicBtn" onclick="toggleMusic()">🎵</div>
+    <div class="status-bar">
+        <div id="dateDisp" style="font-weight: 800; color: var(--lilac); font-size: 1.1rem;"></div>
+        <div style="font-size: 0.85rem; margin-top: 5px; opacity: 0.7;">Score: <span id="ptsDisp">0</span></div>
+    </div>
+    <div id="home" class="screen">
+        <h1 style="color: var(--lilac); font-size: 2.6rem; margin: 0;">Paribhasha</h1>
+        <p style="opacity: 0.7; margin-bottom: 30px;">A new day, a new memory.</p>
+        <div id="cat-lang" class="category-card" onclick="startMode('lang')"><span>🔤 Secret Cipher</span><span class="status-slot"></span></div>
+        <div id="cat-movies" class="category-card" onclick="startMode('movies')"><span>🎬 Movie Buff</span><span class="status-slot"></span></div>
+        <div id="cat-history" class="category-card" onclick="startMode('history')"><span>🏰 Heritage</span><span class="status-slot"></span></div>
+        <div id="master-lock" style="display:none; margin-top: 35px;">
+            <p style="font-weight: 700; color: var(--completed);">All set for today! 💖</p>
+            <div class="timer" id="countdown">00:00:00</div>
+        </div>
+        <div class="poetry-box" id="dailyPoem"></div>
+    </div>
+    <div id="game" class="screen">
+        <div id="langUI">
+            <div id="scrambled" style="font-size: 2.5rem; margin-bottom: 25px; letter-spacing: 5px; color: var(--lilac); font-weight: 800;"></div>
+            <input type="text" id="ans" placeholder="Unlock the word..." autocomplete="off">
+            <button onclick="checkAnswer()">Confirm</button>
+        </div>
+        <div id="quizUI">
+            <p id="qText" style="font-size: 1.2rem; font-weight: 600; margin-bottom: 25px;"></p>
+            <div id="opts"></div>
+        </div>
+    </div>
+    <div id="result" class="screen">
+        <h1 id="resH"></h1>
+        <div class="poetry-box" id="resPoem"></div>
+        <button onclick="goHome()">Home</button>
+    </div>
+
+<script>
+const playlist = ["https://files.catbox.moe/8dzz0u.mp3","https://files.catbox.moe/j828xt.mp3","https://files.catbox.moe/lcnx6q.mp3","https://files.catbox.moe/qfj27d.mp3","https://files.catbox.moe/bn9too.mp3","https://files.catbox.moe/nmerxo.mp3","https://files.catbox.moe/ij3z5g.mp3","https://files.catbox.moe/7x12tz.mp3","https://files.catbox.moe/ad8fyf.mp3","https://files.catbox.moe/39ljqb.mp3","https://files.catbox.moe/5mz5fu.mp3"];
+const audio = document.getElementById('bgMusic');
+audio.onended = () => { audio.src = playlist[Math.floor(Math.random()*playlist.length)]; audio.play(); };
+function toggleMusic() { if(audio.paused){ if(!audio.src) audio.src = playlist[0]; audio.play(); document.getElementById('musicBtn').innerText='🔊'; } else { audio.pause(); document.getElementById('musicBtn').innerText='🎵'; } }
+
+const words = ["soulmate","forever","cherish","divine","eternity","promise","starlight","romance","beloved","luminous","exquisite","sparkle","harmony","sunshine","treasure","radiant","infinite","precious","blissful","together"];
+
+// --- DATA LISTS (To be filled in next message) ---
+
+  const movies = [
+    {q:"Which Marathi film features the song 'Zingaat'?", a:"Sairat", o:["Sairat","Fandry","Jhimma","Killa"]},
+    {q:"Who directed 'Bajirao Mastani'?", a:"Sanjay Leela Bhansali", o:["SLB","Karan Johar","Hirani","Imtiaz Ali"]},
+    {q:"Who stars in 'Bangalore Days'?", a:"Dulquer Salmaan", o:["Dulquer Salmaan","Mohanlal","Mammootty","Fahadh Faasil"]},
+    {q:"Who played 'Archi' in Sairat?", a:"Rinku Rajguru", o:["Rinku Rajguru","Sai Tamhankar","Amruta","Sonalee"]},
+    {q:"Geet and Aditya are characters from which film?", a:"Jab We Met", o:["Jab We Met","Tamasha","Rockstar","Love Aaj Kal"]},
+    {q:"Which movie is based on the life of Pu La Deshpande?", a:"Bhaai", o:["Bhaai","Ani... Dr. Kashinath Ghanekar","Ekti","Thackeray"]},
+    {q:"In 'DDLJ', where do Raj and Simran first meet?", a:"London", o:["London","Switzerland","India","Paris"]},
+    {q:"Which movie features the song 'Malare'?", a:"Premam", o:["Premam","Bangalore Days","Charlie","Hridayam"]},
+    
+        {q:"In 'Sairat', what is the name of the village where the story begins?", a:"Bittergaon", o:["Bittergaon","Akluj","Karmala","Conditional"]},
+    {q:"Which actor played the role of 'George Kutty' in Drishyam?", a:"Mohanlal", o:["Mohanlal","Mammootty","Prithviraj","Suresh Gopi"]},
+    {q:"Who sang the famous Marathi song 'Apsara Aali'?", a:"Bela Shende", o:["Bela Shende","Shreya Ghoshal","Savani Ravindra","Adarsh Shinde"]},
+    {q:"In 'Premam', how many stages of George's love life are shown?", a:"Three", o:["Three","Two","Four","Five"]},
+    {q:"Which movie features the iconic dialogue 'Mogambo Khush Hua'?", a:"Mr. India", o:["Mr. India","Sholay","Don","Shaan"]},
+    {q:"In 'Bangalore Days', what is the relationship between Kuttan, Ajju, and Ammu?", a:"Cousins", o:["Cousins","Siblings","Friends","Colleagues"]},
+    {q:"Who played the role of 'Mastani' in Bajirao Mastani?", a:"Deepika Padukone", o:["Deepika Padukone","Priyanka Chopra","Kareena Kapoor","Anushka Sharma"]},
+    {q:"Which Marathi movie is based on the life of Dr. Prakash Amte?", a:"Dr. Prakash Baba Amte", o:["Dr. Prakash Baba Amte","Bhaai","Ekti","Mee Shivajiraje Bhosale Boltoy"]},
+    {q:"In 'Kumbalangi Nights', who played the character 'Shammi'?", a:"Fahadh Faasil", o:["Fahadh Faasil","Soubin Shahir","Shane Nigam","Srinath Bhasi"]},
+    {q:"Which movie features the song 'Chaiyya Chaiyya' on top of a train?", a:"Dil Se", o:["Dil Se","Swades","Lagaan","Kuch Kuch Hota Hai"]},
+    {q:"Who is the 'Superstar' of Malayalam cinema often called 'Laletan'?", a:"Mohanlal", o:["Mohanlal","Mammootty","Jayaram","Dileep"]},
+    {q:"In '3 Idiots', what was Rancho's real name?", a:"Phunsukh Wangdu", o:["Phunsukh Wangdu","Ranchoddas Chanchad","Farhan Qureshi","Raju Rastogi"]},
+    {q:"Which Marathi film was India's first official entry to the Oscars?", a:"Shwaas", o:["Shwaas","Court","Harishchandrachi Factory","Newton"]},
+    {q:"Who directed the epic 'Baahubali' series?", a:"S.S. Rajamouli", o:["S.S. Rajamouli","Prashanth Neel","Mani Ratnam","Shankar"]},
+    {q:"In 'Charlie', who goes in search of the mysterious artist Charlie?", a:"Tessa", o:["Tessa","Kani","Meera","Mariyam"]},
+    {q:"Which Bollywood movie is set in the town of 'Wasseypur'?", a:"Gangs of Wasseypur", o:["Gangs of Wasseypur","Mirzapur","Omkara","Haider"]},
+    {q:"Who played 'Peshwa Bajirao' in the Marathi film 'Rawale'?", a:"Subodh Bhave", o:["Subodh Bhave","Sharad Kelkar","Chinmay Mandlekar","Gashmeer Mahajani"]},
+    {q:"In 'Zindagi Na Milegi Dobara', which festival do they celebrate in Spain?", a:"La Tomatina", o:["La Tomatina","Bull Run","Flamenco","Sunburn"]},
+    {q:"Which Malayalam movie features a robot named 'Kunjappan'?", a:"Android Kunjappan Ver 5.25", o:["Android Kunjappan","Robot","9","Trance"]},
+    {q:"In 'Sholay', what was the name of Basanti's horse?", a:"Dhanno", o:["Dhanno","Rani","Bijli","Cheetak"]},
+    {q:"Who directed the Marathi masterpiece 'Natrang'?", a:"Ravi Jadhav", o:["Ravi Jadhav","Nagraj Manjule","Paresh Mokashi","Aditya Sarpotdar"]},
+    {q:"In 'Minnal Murali', how does the hero get his superpowers?", a:"Lightning Strike", o:["Lightning Strike","Science Experiment","Alien Gift","Ancient Mask"]},
+    {q:"Which movie ends with the dialogue 'Rahul, naam toh suna hoga'?", a:"Dil To Pagal Hai", o:["Dil To Pagal Hai","Kuch Kuch Hota Hai","K3G","DDLJ"]},
+    {q:"Who played the lead role in the Marathi film 'Katyar Kaljat Ghusali'?", a:"Subodh Bhave", o:["Subodh Bhave","Shankar Mahadevan","Sachin Pilgaonkar","Amruta Khanvilkar"]},
+    {q:"In 'Hridayam', which city does the protagonist go to for his studies?", a:"Chennai", o:["Chennai","Bangalore","Kochi","Coimbatore"]},
+    {q:"Which Bollywood star is known as the 'Shahenshah'?", a:"Amitabh Bachchan", o:["Amitabh Bachchan","SRK","Salman Khan","Aamir Khan"]},
+    {q:"In the Marathi movie 'Duniyadari', what is the name of Shreyas's group?", a:"Katta", o:["Katta","Mitra","Dosti","Katta Gang"]},
+    {q:"Who played the role of 'Kanchan' and 'Guddu' in Kaminey?", a:"Shahid Kapoor", o:["Shahid Kapoor","Ranbir Kapoor","Ranveer Singh","Vicky Kaushal"]},
+    {q:"Which Malayalam film revolves around a high school reunion?", a:"96", o:["96","Classmates","Premam","Hridayam"]},
+    {q:"Who is the director of 'Harishchandrachi Factory'?", a:"Paresh Mokashi", o:["Paresh Mokashi","Ravi Jadhav","Nagraj Manjule","Sumitra Bhave"]},
+    {q:"In 'Queen', where does Rani go for her solo honeymoon?", a:"Paris & Amsterdam", o:["Paris & Amsterdam","London","New York","Rome"]},
+    {q:"Which movie features the character 'Circuit'?", a:"Munna Bhai M.B.B.S.", o:["Munna Bhai M.B.B.S.","Lage Raho Munna Bhai","Don","Golmaal"]},
+    {q:"In 'Maheshinte Prathikaaram', what is Mahesh's profession?", a:"Photographer", o:["Photographer","Tailor","Painter","Doctor"]},
+    {q:"Which Marathi movie features the song 'Kombdi Palali'?", a:"Jatra", o:["Jatra","Agabai Arecha","No Entry","Pachhadlela"]},
+    {q:"Who played the role of 'Silk Smitha' in The Dirty Picture?", a:"Vidya Balan", o:["Vidya Balan","Kangana Ranaut","Deepika Padukone","Priyanka Chopra"]},
+    {q:"In 'Ustad Hotel', what is the name of Faizi's grandfather?", a:"Kareemikka", o:["Kareemikka","Ustad","Haneef","Sulaiman"]},
+    {q:"Which movie features the line 'All Izz Well'?", a:"3 Idiots", o:["3 Idiots","Dangal","Taare Zameen Par","Lagaan"]},
+    {q:"Who played 'Bajirao' in the film 'Tanaji: The Unsung Warrior'?", a:"Sharad Kelkar", o:["Sharad Kelkar","Ajay Devgn","Saif Ali Khan","Subodh Bhave"]},
+    {q:"In 'Manichitrathazhu', what is the name of the 'spirit'?", a:"Nagavalli", o:["Nagavalli","Chandramukhi","Ganga","Sreedevi"]},
+    {q:"Who directed the film 'Lagaan'?", a:"Ashutosh Gowariker", o:["Ashutosh Gowariker","Karan Johar","Sanjay Leela Bhansali","Rajkumar Hirani"]},
+    {q:"In 'Faster Fene', who plays the lead role of Banesh Fene?", a:"Amey Wagh", o:["Amey Wagh","Siddharth Jadhav","Subodh Bhave","Ankush Chaudhari"]},
+    {q:"Which movie features the song 'Tum Hi Ho'?", a:"Aashiqui 2", o:["Aashiqui 2","Ek Villain","Half Girlfriend","Kabir Singh"]},
+    {q:"In 'Sudani from Nigeria', which sport is the focus?", a:"Football", o:["Football","Cricket","Hockey","Athletics"]},
+    {q:"Which Marathi film is based on the life of Anand Dighe?", a:"Dharmaveer", o:["Dharmaveer","Thackeray","Morya","Rege"]},
+    {q:"Who played 'Kabir Singh' in the movie of the same name?", a:"Shahid Kapoor", o:["Shahid Kapoor","Ranbir Kapoor","Ranveer Singh","Vicky Kaushal"]},
+    {q:"In 'The Great Indian Kitchen', the story focuses on which state?", a:"Kerala", o:["Kerala","Tamil Nadu","Karnataka","Andhra Pradesh"]},
+    {q:"Which movie stars Aamir Khan as a wrestler named Mahavir Singh Phogat?", a:"Dangal", o:["Dangal","Sultan","Bhaag Milkha Bhaag","Chak De India"]},
+    {q:"In 'Muramba', who plays the lead couple?", a:"Amey Wagh & Mithila Palkar", o:["Amey Wagh & Mithila Palkar","Lalit Prabhakar & Sai","Subodh & Sonalee","Siddharth & Spruha"]},
+    {q:"Which Malayalam movie features a character named 'Dashamoolam Damu'?", a:"Chattambinadu", o:["Chattambinadu","Pulimurugan","Lucifer","Bheeshma Parvam"]},
+    {q:"Who played the lead in the Marathi film 'Natsamrat'?", a:"Nana Patekar", o:["Nana Patekar","Subodh Bhave","Dr. Sreeram Lagoo","Vikram Gokhale"]},
+    {q:"Who played the lead in 'Natsamrat'?", a:"Nana Patekar", o:["Nana Patekar","Subodh Bhave","Siddharth Jadhav","Ankush Chaudhari"]},
+    {q:"Which film features the character 'Kattappa'?", a:"Baahubali", o:["Baahubali","RRR","Magadheera","Eega"]}
+];
+
+ const history = [
+    {q:"Which inscription describes Samudragupta's conquests?", a:"Allahabad Pillar", o:["Hathigumpha","Allahabad Pillar","Junagadh","Mehrauli"]},
+    {q:"Coronation of Shivaji Maharaj was at which fort?", a:"Raigad", o:["Raigad","Shivneri","Torna","Pratapgad"]},
+    {q:"The Saka era began in which year?", a:"78 CE", o:["57 BCE","78 CE","320 CE","606 CE"]},
+    {q:"Who built the Kirti Stambha at Chittorgarh?", a:"Rana Kumbha", o:["Rana Kumbha","Rana Pratap","Rana Sanga","Rana Udai Singh"]},
+    {q:"Gandhara art is a combination of Indian and...?", a:"Greek", o:["Greek","Persian","Roman","Chinese"]},
+    {q:"Who was the court poet of Harsha?", a:"Banabhatta", o:["Banabhatta","Kalidasa","Bhavabhuti","Dandin"]},
+    {q:"The First Battle of Tarain took place in?", a:"1191", o:["1191","1192","1526","1556"]},
+    {q:"Warli paintings are traditional to which state?", a:"Maharashtra", o:["Maharashtra","Odisha","Bihar","Gujarat"]},
+    {q:"Who founded the Swaraj Party?", a:"C.R. Das & Motilal Nehru", o:["C.R. Das & Motilal Nehru","Tilak","Bose","Gandhi"]},
+    {q:"The capital of Shivaji Maharaj's kingdom?", a:"Raigad", o:["Raigad","Pratapgad","Satara","Pune"]},
+    {q:"Who wrote 'Gatha Saptashati'?", a:"Hala", o:["Hala","Gautamiputra","Vikramaditya","Ashoka"]},
+    {q:"The Ajanta Caves are dedicated to which religion?", a:"Buddhism", o:["Buddhism","Jainism","Hinduism","Sikhism"]},
+    {q:"Who was called the 'Indian Napoleon'?", a:"Samudragupta", o:["Samudragupta","Chandragupta","Ashoka","Akbar"]},
+    {q:"Which Maratha saint wrote 'Dasbodh'?", a:"Samarth Ramdas", o:["Samarth Ramdas","Tukaram","Eknath","Dnyaneshwar"]},
+       {q:"Who was the first Peshwa of the Maratha Empire?", a:"Balaji Vishwanath", o:["Balaji Vishwanath","Baji Rao I","Madhavrao","Balaji Baji Rao"]},
+    {q:"The 'Grand Old Man of India' was?", a:"Dadabhai Naoroji", o:["Dadabhai Naoroji","Gopal Krishna Gokhale","Tilak","Annie Besant"]},
+    {q:"Who built the Sun Temple at Konark?", a:"Narasimhadeva I", o:["Narasimhadeva I","Rajaraja Chola","Ashoka","Kharavela"]},
+    {q:"The 'Battle of Pratapgad' was fought between Shivaji Maharaj and...?", a:"Afzal Khan", o:["Afzal Khan","Shaista Khan","Aurangzeb","Siddhi Jauhar"]},
+    {q:"Which Chinese traveler visited India during Harsha's reign?", a:"Xuanzang", o:["Xuanzang","Faxian","I-Tsing","Megasthenes"]},
+    {q:"Who was the spiritual guru of Shivaji Maharaj?", a:"Samarth Ramdas", o:["Samarth Ramdas","Sant Tukaram","Sant Eknath","Sant Dnyaneshwar"]},
+    {q:"The Quit India Movement started in which year?", a:"1942", o:["1942","1930","1920","1947"]},
+    {q:"Which social reformer founded the 'Satyashodhak Samaj'?", a:"Jyotirao Phule", o:["Jyotirao Phule","Dr. Ambedkar","Savarkar","Agarkar"]},
+    {q:"The capital of the Bahmani Kingdom was?", a:"Gulbarga", o:["Gulbarga","Bijapur","Golconda","Ahmednagar"]},
+    {q:"Who wrote the famous book 'Discovery of India'?", a:"Jawaharlal Nehru", o:["Jawaharlal Nehru","Mahatma Gandhi","Subhash Chandra Bose","Sardar Patel"]},
+    {q:"The first Railway line in India was opened in 1853 between?", a:"Mumbai to Thane", o:["Mumbai to Thane","Howrah to Hooghly","Madras to Arkonam","Delhi to Agra"]},
+    {q:"Which Maratha Admiral is known as the 'Father of Indian Navy'?", a:"Kanhoji Angre", o:["Kanhoji Angre","Bajirao I","Hambirrao Mohite","Netaji Palkar"]},
+    {q:"The famous Kailash Temple at Ellora was built by?", a:"Krishna I", o:["Krishna I","Dantidurga","Amoghavarsha","Dhruva"]},
+    {q:"Who was the Mughal Emperor when the East India Company was formed?", a:"Akbar", o:["Akbar","Jahangir","Shah Jahan","Aurangzeb"]},
+    {q:"The 'Incredible Victory' at Pawankhind was led by?", a:"Baji Prabhu Deshpande", o:["Baji Prabhu Deshpande","Tanaji Malusare","Murarbaji","Jiva Mahala"]},
+    {q:"Who founded the 'Banaras Hindu University'?", a:"Madan Mohan Malviya", o:["Madan Mohan Malviya","Annie Besant","Gandhi","Nehru"]},
+    {q:"Which Veda is the oldest among the four?", a:"Rigveda", o:["Rigveda","Samaveda","Yajurveda","Atharvaveda"]},
+    {q:"Who gave the slogan 'Swaraj is my birthright'?", a:"Bal Gangadhar Tilak", o:["Bal Gangadhar Tilak","Lala Lajpat Rai","Bipin Chandra Pal","Bhagat Singh"]},
+    {q:"The 'Panchatantra' was written by?", a:"Vishnu Sharma", o:["Vishnu Sharma","Kalidasa","Chanakya","Banabhatta"]},
+    {q:"In which year did the First War of Independence take place?", a:"1857", o:["1857","1757","1947","1885"]},
+    {q:"Who was the first woman ruler of Delhi?", a:"Razia Sultana", o:["Razia Sultana","Nur Jahan","Chand Bibi","Rani Lakshmibai"]},
+    {q:"The 'Ashtapradhan' council belonged to?", a:"Shivaji Maharaj", o:["Shivaji Maharaj","Akbar","Krishnadevaraya","Ashoka"]},
+    {q:"Which city was the capital of the Mughals before Delhi?", a:"Agra", o:["Agra","Lahore","Fatehpur Sikri","Aurangabad"]},
+    {q:"Who built the famous Sanchi Stupa?", a:"Ashoka", o:["Ashoka","Chandragupta","Kanishka","Harsha"]},
+    {q:"The first Maratha Chhatrapati was crowned in which year?", a:"1674", o:["1674","1630","1645","1680"]},
+    {q:"Who started the 'Ganesh Utsav' to unite people?", a:"Lokmanya Tilak", o:["Lokmanya Tilak","Jyotirao Phule","Savarkar","Gokhale"]},
+    {q:"The 'Lion of Punjab' was the nickname of?", a:"Lala Lajpat Rai", o:["Lala Lajpat Rai","Ranjit Singh","Bhagat Singh","Udham Singh"]},
+    {q:"Which fort did Tanaji Malusare win but lose his life?", a:"Sinhagad", o:["Sinhagad","Raigad","Panhala","Pratapgad"]},
+    {q:"Who founded the 'Arya Samaj'?", a:"Dayananda Saraswati", o:["Dayananda Saraswati","Vivekananda","Ram Mohan Roy","Ramakrishna"]},
+    {q:"The 'Iron Man of India' is?", a:"Sardar Vallabhbhai Patel", o:["Sardar Vallabhbhai Patel","Subhash Chandra Bose","Bhagat Singh","Lal Bahadur Shastri"]},
+    {q:"Which empire was founded by Harihara and Bukka?", a:"Vijayanagara", o:["Vijayanagara","Maratha","Hoysala","Chola"]},
+    {q:"The 'Dandi March' was against which tax?", a:"Salt Tax", o:["Salt Tax","Land Tax","Sugar Tax","Cloth Tax"]},
+    {q:"Who was the first Governor-General of independent India?", a:"Lord Mountbatten", o:["Lord Mountbatten","C. Rajagopalachari","Rajendra Prasad","Nehru"]},
+    {q:"The 'Gayatri Mantra' is found in which Veda?", a:"Rigveda", o:["Rigveda","Yajurveda","Samaveda","Atharvaveda"]},
+    {q:"Who wrote the epic 'Ramayana'?", a:"Valmiki", o:["Valmiki","Vyasa","Tulsidas","Kalidasa"]},
+    {q:"The city of Hampi was the capital of?", a:"Vijayanagara", o:["Vijayanagara","Chola","Chalukya","Rashtrakuta"]},
+    {q:"Who was the political guru of Mahatma Gandhi?", a:"Gopal Krishna Gokhale", o:["Gopal Krishna Gokhale","Tilak","Dadabhai Naoroji","Besant"]},
+    {q:"Which battle marked the beginning of British rule in India?", a:"Battle of Plassey", o:["Battle of Plassey","Battle of Buxar","Battle of Panipat","Battle of Haldighati"]},
+    {q:"The 'Jallianwala Bagh' massacre took place in?", a:"Amritsar", o:["Amritsar","Lahore","Delhi","Chandigarh"]},
+    {q:"Who built the 'Charminar' in Hyderabad?", a:"Quli Qutb Shah", o:["Quli Qutb Shah","Akbar","Aurangzeb","Shah Jahan"]},
+    {q:"Which Indian King defeated Alexander's general Seleucus?", a:"Chandragupta Maurya", o:["Chandragupta Maurya","Ashoka","Bindusara","Porus"]},
+    {q:"The 'Shore Temple' at Mahabalipuram was built by?", a:"Pallavas", o:["Pallavas","Cholas","Pandyas","Cheras"]},
+    {q:"Who was the first Indian woman to become President of INC?", a:"Sarojini Naidu", o:["Sarojini Naidu","Annie Besant","Indira Gandhi","Sucheta Kriplani"]},
+    {q:"The 'Buland Darwaza' was built to commemorate the victory over?", a:"Gujarat", o:["Gujarat","Bengal","Deccan","Mewar"]},  
+       {q:"Who was the first Peshwa of the Maratha Empire?", a:"Balaji Vishwanath", o:["Balaji Vishwanath","Baji Rao I","Madhavrao","Balaji Baji Rao"]},
+    {q:"The 'Grand Old Man of India' was?", a:"Dadabhai Naoroji", o:["Dadabhai Naoroji","Gopal Krishna Gokhale","Tilak","Annie Besant"]},
+    {q:"Who built the Sun Temple at Konark?", a:"Narasimhadeva I", o:["Narasimhadeva I","Rajaraja Chola","Ashoka","Kharavela"]},
+    {q:"The 'Battle of Pratapgad' was fought between Shivaji Maharaj and...?", a:"Afzal Khan", o:["Afzal Khan","Shaista Khan","Aurangzeb","Siddhi Jauhar"]},
+    {q:"Which Chinese traveler visited India during Harsha's reign?", a:"Xuanzang", o:["Xuanzang","Faxian","I-Tsing","Megasthenes"]},
+    {q:"Who was the spiritual guru of Shivaji Maharaj?", a:"Samarth Ramdas", o:["Samarth Ramdas","Sant Tukaram","Sant Eknath","Sant Dnyaneshwar"]},
+    {q:"The Quit India Movement started in which year?", a:"1942", o:["1942","1930","1920","1947"]},
+    {q:"Which social reformer founded the 'Satyashodhak Samaj'?", a:"Jyotirao Phule", o:["Jyotirao Phule","Dr. Ambedkar","Savarkar","Agarkar"]},
+    {q:"The capital of the Bahmani Kingdom was?", a:"Gulbarga", o:["Gulbarga","Bijapur","Golconda","Ahmednagar"]},
+    {q:"Who wrote the famous book 'Discovery of India'?", a:"Jawaharlal Nehru", o:["Jawaharlal Nehru","Mahatma Gandhi","Subhash Chandra Bose","Sardar Patel"]},
+    {q:"The first Railway line in India was opened in 1853 between?", a:"Mumbai to Thane", o:["Mumbai to Thane","Howrah to Hooghly","Madras to Arkonam","Delhi to Agra"]},
+    {q:"Which Maratha Admiral is known as the 'Father of Indian Navy'?", a:"Kanhoji Angre", o:["Kanhoji Angre","Bajirao I","Hambirrao Mohite","Netaji Palkar"]},
+    {q:"The famous Kailash Temple at Ellora was built by?", a:"Krishna I", o:["Krishna I","Dantidurga","Amoghavarsha","Dhruva"]},
+    {q:"Who was the Mughal Emperor when the East India Company was formed?", a:"Akbar", o:["Akbar","Jahangir","Shah Jahan","Aurangzeb"]},
+    {q:"The 'Incredible Victory' at Pawankhind was led by?", a:"Baji Prabhu Deshpande", o:["Baji Prabhu Deshpande","Tanaji Malusare","Murarbaji","Jiva Mahala"]},
+    {q:"Who founded the 'Banaras Hindu University'?", a:"Madan Mohan Malviya", o:["Madan Mohan Malviya","Annie Besant","Gandhi","Nehru"]},
+    {q:"Which Veda is the oldest among the four?", a:"Rigveda", o:["Rigveda","Samaveda","Yajurveda","Atharvaveda"]},
+    {q:"Who gave the slogan 'Swaraj is my birthright'?", a:"Bal Gangadhar Tilak", o:["Bal Gangadhar Tilak","Lala Lajpat Rai","Bipin Chandra Pal","Bhagat Singh"]},
+    {q:"The 'Panchatantra' was written by?", a:"Vishnu Sharma", o:["Vishnu Sharma","Kalidasa","Chanakya","Banabhatta"]},
+    {q:"In which year did the First War of Independence take place?", a:"1857", o:["1857","1757","1947","1885"]},
+    {q:"Who was the first woman ruler of Delhi?", a:"Razia Sultana", o:["Razia Sultana","Nur Jahan","Chand Bibi","Rani Lakshmibai"]},
+    {q:"The 'Ashtapradhan' council belonged to?", a:"Shivaji Maharaj", o:["Shivaji Maharaj","Akbar","Krishnadevaraya","Ashoka"]},
+    {q:"Which city was the capital of the Mughals before Delhi?", a:"Agra", o:["Agra","Lahore","Fatehpur Sikri","Aurangabad"]},
+    {q:"Who built the famous Sanchi Stupa?", a:"Ashoka", o:["Ashoka","Chandragupta","Kanishka","Harsha"]},
+    {q:"The first Maratha Chhatrapati was crowned in which year?", a:"1674", o:["1674","1630","1645","1680"]},
+    {q:"Who started the 'Ganesh Utsav' to unite people?", a:"Lokmanya Tilak", o:["Lokmanya Tilak","Jyotirao Phule","Savarkar","Gokhale"]},
+    {q:"The 'Lion of Punjab' was the nickname of?", a:"Lala Lajpat Rai", o:["Lala Lajpat Rai","Ranjit Singh","Bhagat Singh","Udham Singh"]},
+    {q:"Which fort did Tanaji Malusare win but lose his life?", a:"Sinhagad", o:["Sinhagad","Raigad","Panhala","Pratapgad"]},
+    {q:"Who founded the 'Arya Samaj'?", a:"Dayananda Saraswati", o:["Dayananda Saraswati","Vivekananda","Ram Mohan Roy","Ramakrishna"]},
+    {q:"The 'Iron Man of India' is?", a:"Sardar Vallabhbhai Patel", o:["Sardar Vallabhbhai Patel","Subhash Chandra Bose","Bhagat Singh","Lal Bahadur Shastri"]},
+    {q:"Which empire was founded by Harihara and Bukka?", a:"Vijayanagara", o:["Vijayanagara","Maratha","Hoysala","Chola"]},
+    {q:"The 'Dandi March' was against which tax?", a:"Salt Tax", o:["Salt Tax","Land Tax","Sugar Tax","Cloth Tax"]},
+    {q:"Who was the first Governor-General of independent India?", a:"Lord Mountbatten", o:["Lord Mountbatten","C. Rajagopalachari","Rajendra Prasad","Nehru"]},
+    {q:"The 'Gayatri Mantra' is found in which Veda?", a:"Rigveda", o:["Rigveda","Yajurveda","Samaveda","Atharvaveda"]},
+    {q:"Who wrote the epic 'Ramayana'?", a:"Valmiki", o:["Valmiki","Vyasa","Tulsidas","Kalidasa"]},
+    {q:"The city of Hampi was the capital of?", a:"Vijayanagara", o:["Vijayanagara","Chola","Chalukya","Rashtrakuta"]},
+    {q:"Who was the political guru of Mahatma Gandhi?", a:"Gopal Krishna Gokhale", o:["Gopal Krishna Gokhale","Tilak","Dadabhai Naoroji","Besant"]},
+    {q:"Which battle marked the beginning of British rule in India?", a:"Battle of Plassey", o:["Battle of Plassey","Battle of Buxar","Battle of Panipat","Battle of Haldighati"]},
+    {q:"The 'Jallianwala Bagh' massacre took place in?", a:"Amritsar", o:["Amritsar","Lahore","Delhi","Chandigarh"]},
+    {q:"Who built the 'Charminar' in Hyderabad?", a:"Quli Qutb Shah", o:["Quli Qutb Shah","Akbar","Aurangzeb","Shah Jahan"]},
+    {q:"Which Indian King defeated Alexander's general Seleucus?", a:"Chandragupta Maurya", o:["Chandragupta Maurya","Ashoka","Bindusara","Porus"]},
+    {q:"The 'Shore Temple' at Mahabalipuram was built by?", a:"Pallavas", o:["Pallavas","Cholas","Pandyas","Cheras"]},
+    {q:"Who was the first Indian woman to become President of INC?", a:"Sarojini Naidu", o:["Sarojini Naidu","Annie Besant","Indira Gandhi","Sucheta Kriplani"]},
+    {q:"The 'Buland Darwaza' was built to commemorate the victory over?", a:"Gujarat", o:["Gujarat","Bengal","Deccan","Mewar"]},
+    {q:"Who was the first Indian to win a Nobel Prize?", a:"Rabindranath Tagore", o:["Rabindranath Tagore","C.V. Raman","Mother Teresa","Hargobind Khorana"]},
+    {q:"The 'Shantiniketan' was founded by?", a:"Rabindranath Tagore", o:["Rabindranath Tagore","Vivekananda","Gandhi","Aurobindo"]},
+    {q:"Which ruler shifted the capital from Delhi to Daulatabad?", a:"Muhammad bin Tughluq", o:["Muhammad bin Tughluq","Alauddin Khalji","Iltutmish","Balban"]},
+    {q:"The 'Khajuraho' temples were built by?", a:"Chandela Dynasty", o:["Chandela Dynasty","Chola Dynasty","Pallava Dynasty","Maurya Dynasty"]},
+    {q:"Who was the viceroy during the Partition of Bengal?", a:"Lord Curzon", o:["Lord Curzon","Lord Dalhousie","Lord Canning","Lord Ripon"]},
+    {q:"The 'Gitanjali' is a collection of poems by?", a:"Rabindranath Tagore", o:["Rabindranath Tagore","Sarojini Naidu","Premchand","Bankim Chandra"]}, 
+    {q:"The Indus Valley Civilization belonged to which age?", a:"Bronze Age", o:["Bronze Age","Iron Age","Stone Age","Copper Age"]}
+];
+
+const library = [
+    {m:"तुझं हसणं म्हणजे माझ्यासाठी पाऊस.", kn:"നിന്റെ ചിരി എനിക്ക് മഴപോലെയാണ്.", km:"Ninte chiri enicku mazhapoleyaanu.", e:"Your smile is like rain to me."},
+    {m:"आयुष्यभर तुझी साथ हवीय.", kn:"ജീവിതകാലം മുഴുവൻ നീ കൂടെ വേണം.", km:"Jeevithakalam muzhuvan nee koode venam.", e:"I want you by my side for a lifetime."},
+    {m:"तू समोर असली की शब्द सुचत नाहीत.", kn:"നീ മുന്നിലുണ്ടെങ്കിൽ എനിക്ക് വാക്കുകൾ കിട്ടില്ല.", km:"Nee munnilundengil enicku vakkukal kittilla.", e:"When you are in front of me, I lose my words."},
+    {m:"तू माझ्या आयुष्यातली सर्वात सुंदर भेट.", kn:"എന്റെ ജീവിതത്തിലെ ഏറ്റവും മനോഹരമായ സമ്മാനമാണ് നീ.", km:"Ente jeevithathile ettavum manoharamaaya sammanamaanu nee.", e:"You are the most beautiful gift of my life."},
+    {m:"तुझ्या कुशीत जग विसरतो.", kn:"നിന്റെ കൂടെ ഞാൻ ലോകം മറക്കുന്നു.", km:"Ninte koode njan lokam marakkunnu.", e:"I forget the world in your embrace."},
+    {m:"तूच माझा श्वास, तूच माझा ध्यास.", kn:"നീയാണ് എന്റെ ശ്വാസം, നീയാണ് എന്റെ എല്ലാം.", km:"Neeyaana ente shwasam, neeyaana ente ellam.", e:"You are my breath, you are my everything."},
+    {m:"तुझ्या डोळ्यांत माझं जग सामावलंय.", kn:"നിന്റെ കണ്ണുകളിൽ എന്റെ ലോകം ഉണ്ട്.", km:"Ninte kannukalil ente lokam undu.", e:"My world is contained within your eyes."},
+    {m:"प्रेम म्हणजे काय? तुझ्यासोबत असणं.", kn:"സ്നേഹമെന്താണ്? നിന്റെ കൂടെ ഇരിക്കുന്നത്.", km:"Snehame-thaanu? Ninte koode irikkunnathu.", e:"What is love? Being with you."},
+    {m:"माझ्या काळजाचा तुकडा आहेस तू.", kn:"എന്റെ ഹൃദയത്തിന്റെ ഭാഗമാണ് നീ.", km:"Ente hridhayathinte bhagamaanu nee.", e:"You are a part of my heart."},
+    {m:"तू फक्त माझी आहेस.", kn:"നീ എന്റേത് മാത്രമാണ്.", km:"Nee ente maathramaanu.", e:"You are only mine."},
+    {m:"प्रत्येक जन्मी तूच हवी आहेस.", kn:"എല്ലാ ജന്മത്തിലും നീ മതി.", km:"Ellaa janmathilum nee mathi.", e:"In every lifetime, I only want you."},
+    {m:"तू माझं घर आहेस.", kn:"നീയാണ് എന്റെ വീട്.", km:"Neeyaana ente veedu.", e:"You are my home."},
+    {m:"तुझ्याशिवाय जगणं अशक्य आहे.", kn:"നീ ഇല്ലാതെ ജീവിക്കാൻ കഴിയില്ല.", km:"Nee illathe jeevikkann avilla.", e:"Living without you is impossible."},
+    {m:"तू माझं स्वप्न आणि सत्य दोन्ही आहेस.", kn:"നീ എന്റെ സ്വപ്നവും സത്യവുമാണ്.", km:"Nee ente swapnavum sathyavumaanu.", e:"You are both my dream and my reality."},
+  
+      {m:"तू माझं आयुष्य सुंदर केलंस.", kn:"നീ എന്റെ ജീവിതം മനോഹരമാക്കി.", km:"Nee ente jeevitham manoharamakki.", e:"You made my life beautiful."},
+    {m:"तुझी खूप आठवण येतेय.", kn:"എനിക്ക് നിന്നെ ഒരുപാട് ഓർമ്മ വരുന്നു.", km:"Enicku ninne orupaadu ormma varunnu.", e:"I miss you so much."},
+    {m:"काय करतेस?", kn:"നീ എന്ത് ചെയ്യുന്നു?", km:"Nee enthu cheyyunnu?", e:"What are you doing?"},
+    {m:"जेवण झालं का?", kn:"ഭക്ഷണം കഴിച്ചോ?", km:"Bhakshanam kazhicho?", e:"Did you eat?"},
+    {m:"काळजी घे.", kn:"ശ്രദ്ധിക്കണം.", km:"Shradhickanam.", e:"Take care."},
+    {m:"तू खूप गोड दिसतेस.", kn:"നിന്നെ കാണാൻ നല്ല ഭംഗിയുണ്ട്.", km:"Ninne kaanan nalla bhangiyundu.", e:"You look very sweet/beautiful."},
+    {m:"मला तुझा अभिमान वाटतो.", kn:"എനിക്ക് നിന്നിൽ അഭിമാനമുണ്ട്.", km:"Enicku ninnil abhimaanamm-undu.", e:"I am proud of you."},
+    {m:"नेहमी हसत राहा.", kn:"എപ്പോഴും ചിരിച്ചുകൊണ്ടിരിക്കൂ.", km:"Eppozhum chirichukondirikkoo.", e:"Keep smiling always."},
+    {m:"तू माझी जिगरी दोस्त आहेस.", kn:"നീ എന്റെ പ്രിയപ്പെട്ട കൂട്ടുകാരിയാണ്.", km:"Nee ente priyapetta koottukaariyaanu.", e:"You are my best friend."},
+    {m:"शुभ रात्री, स्वप्नात ये.", kn:"ശുഭരാത്രി, സ്വപ്നത്തിൽ കാണാം.", km:"Shubharaathri, swapnathil kaanaam.", e:"Goodnight, see you in my dreams."},
+    {m:"तुला काय हवंय?", kn:"നിനക്ക് എന്താണ് വേണ്ടത്?", km:"Ninnacku enthaanu vendathu?", e:"What do you want?"},
+    {m:"मी नेहमी तुझ्यासोबत आहे.", kn:"ഞാൻ എപ്പോഴും നിന്റെ കൂടെയുണ്ട്.", km:"Njan eppozhum ninte koodeyundu.", e:"I am always with you."},
+    {m:"तू खूप हुशार आहेस.", kn:"നീ വളരെ ബുദ്ധിമതിയാണ്.", km:"Nee valare buddhimathiyaanu.", e:"You are very intelligent."},
+    {m:"मला तुझा आवाज आवडतो.", kn:"എനിക്ക് നിന്റെ ശബ്ദം ഇഷ്ടമാണ്.", km:"Enicku ninte shabdham ishtamaanu.", e:"I love your voice."},
+    {m:"आपण लवकरच भेटू.", kn:"നമുക്ക് ഉടനെ കാണാം.", km:"Namucku udane kaanaam.", e:"We will meet soon."},
+    {m:"मला तुझी साथ हवीय.", kn:"എനിക്ക് നിന്റെ കൂടെ ഇരിക്കണം.", km:"Enicku ninte koode irickanam.", e:"I want your company."},
+    {m:"घाबरू नकोस, मी आहे ना.", kn:"പേടിക്കണ്ട, ഞാൻ ഉണ്ടല്ലോ.", km:"Pedickanda, njan undallo.", e:"Don't be afraid, I am here."},
+    {m:"तुझा दिवस कसा होता?", kn:"നിന്റെ ദിവസം എങ്ങനെയുണ്ടായിരുന്നു?", km:"Ninte divasam enganeyundayirunnu?", e:"How was your day?"},
+    {m:"तू माझं सर्वस्व आहेस.", kn:"നീയാണ് എന്റെ എല്ലാം.", km:"Neeyaanu ente ellam.", e:"You are my everything."},
+    {m:"खूप प्रेम.", kn:"ഒരുപാട് സ്നേഹം.", km:"Orupaadu sneham.", e:"Lots of love."},
+  
+      {m:"तू माझं आयुष्य सुंदर केलंस.", kn:"നീ എന്റെ ജീവിതം മനോഹരമാക്കി.", km:"Nee ente jeevitham manoharamakki.", e:"You made my life beautiful."},
+    {m:"तुझी खूप आठवण येतेय.", kn:"എനിക്ക് നിന്നെ ഒരുപാട് ഓർമ്മ വരുന്നു.", km:"Enicku ninne orupaadu ormma varunnu.", e:"I miss you so much."},
+    {m:"काय करतेस?", kn:"നീ എന്ത് ചെയ്യുന്നു?", km:"Nee enthu cheyyunnu?", e:"What are you doing?"},
+    {m:"जेवण झालं का?", kn:"ഭക്ഷണം കഴിച്ചോ?", km:"Bhakshanam kazhicho?", e:"Did you eat?"},
+    {m:"काळजी घे.", kn:"ശ്രദ്ധിക്കണം.", km:"Shradhickanam.", e:"Take care."},
+    {m:"तू खूप गोड दिसतेस.", kn:"നിന്നെ കാണാൻ നല്ല ഭംഗിയുണ്ട്.", km:"Ninne kaanan nalla bhangiyundu.", e:"You look very sweet/beautiful."},
+    {m:"मला तुझा अभिमान वाटतो.", kn:"എനിക്ക് നിന്നിൽ അഭിമാനമുണ്ട്.", km:"Enicku ninnil abhimaanamm-undu.", e:"I am proud of you."},
+    {m:"नेहमी हसत राहा.", kn:"എപ്പോഴും ചിരിച്ചുകൊണ്ടിരിക്കൂ.", km:"Eppozhum chirichukondirikkoo.", e:"Keep smiling always."},
+    {m:"तू माझी जिगरी दोस्त आहेस.", kn:"നീ എന്റെ പ്രിയപ്പെട്ട കൂട്ടുകാരിയാണ്.", km:"Nee ente priyapetta koottukaariyaanu.", e:"You are my best friend."},
+    {m:"शुभ रात्री, स्वप्नात ये.", kn:"ശുഭരാത്രി, സ്വപ്നത്തിൽ കാണാം.", km:"Shubharaathri, swapnathil kaanaam.", e:"Goodnight, see you in my dreams."},
+    {m:"तुला काय हवंय?", kn:"നിനക്ക് എന്താണ് വേണ്ടത്?", km:"Ninnacku enthaanu vendathu?", e:"What do you want?"},
+    {m:"मी नेहमी तुझ्यासोबत आहे.", kn:"ഞാൻ എപ്പോഴും നിന്റെ കൂടെയുണ്ട്.", km:"Njan eppozhum ninte koodeyundu.", e:"I am always with you."},
+    {m:"तू खूप हुशार आहेस.", kn:"നീ വളരെ ബുദ്ധിമതിയാണ്.", km:"Nee valare buddhimathiyaanu.", e:"You are very intelligent."},
+    {m:"मला तुझा आवाज आवडतो.", kn:"എനിക്ക് നിന്റെ ശബ്ദം ഇഷ്ടമാണ്.", km:"Enicku ninte shabdham ishtamaanu.", e:"I love your voice."},
+    {m:"आपण लवकरच भेटू.", kn:"നമുക്ക് ഉടനെ കാണാം.", km:"Namucku udane kaanaam.", e:"We will meet soon."},
+    {m:"मला तुझी साथ हवीय.", kn:"എനിക്ക് നിന്റെ കൂടെ ഇരിക്കണം.", km:"Enicku ninte koode irickanam.", e:"I want your company."},
+    {m:"घाबरू नकोस, मी आहे ना.", kn:"പേടിക്കണ്ട, ഞാൻ ഉണ്ടല്ലോ.", km:"Pedickanda, njan undallo.", e:"Don't be afraid, I am here."},
+    {m:"तुझा दिवस कसा होता?", kn:"നിന്റെ ദിവസം എങ്ങനെയുണ്ടായിരുന്നു?", km:"Ninte divasam enganeyundayirunnu?", e:"How was your day?"},
+    {m:"तू माझं सर्वस्व आहेस.", kn:"നീയാണ് എന്റെ എല്ലാം.", km:"Neeyaanu ente ellam.", e:"You are my everything."},
+    {m:"खूप प्रेम.", kn:"ഒരുപാട് സ്നേഹം.", km:"Orupaadu sneham.", e:"Lots of love."},
+    {m:"आपली जोडी जगावेगळी आहे.", kn:"നമ്മുടെ ജോഡി ലോകത്തിൽ പ്രത്യേകമാണ്.", km:"Nammude jodi lokathil prathyekamaanu.", e:"Our bond is unique in this world."}
+    // (I have added 15 unique ones; the code will cycle these beautifully)
+];
+
+// --- LOGIC ---
+let currentAns = "", currentMode = "";
+function init() {
+    const d = new Date(); document.getElementById('dateDisp').innerText = d.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('ptsDisp').innerText = localStorage.getItem('pari_pts') || 0;
+    updateMenu(); setInterval(updateTimer, 1000);
+    for(let i=0; i<15; i++) { let h = document.createElement('div'); h.className='heart'; h.innerHTML='♥'; h.style.left=Math.random()*100+'vw'; h.style.animationDuration=(Math.random()*8+7)+'s'; document.body.appendChild(h); }
+}
+
+function updateMenu() {
+    const today = new Date().toDateString(); 
+    let state = JSON.parse(localStorage.getItem('pari_v7') || '{"date":""}');
+    if(state.date !== today) state = {date: today, lang: false, movies: false, history: false};
+    localStorage.setItem('pari_v7', JSON.stringify(state));
+    let all = true; 
+    ['lang','movies','history'].forEach(m => { 
+        const c = document.getElementById('cat-'+m); 
+        if(state[m]){ c.classList.add('locked'); c.querySelector('.status-slot').innerHTML='✅'; c.onclick = null; } 
+        else { all=false; c.classList.remove('locked'); c.querySelector('.status-slot').innerHTML=''; c.onclick = () => startMode(m); } 
+    });
+    document.getElementById('master-lock').style.display = all ? 'block' : 'none';
+    if(library.length > 0) {
+        const p = library[Math.floor(Math.random()*library.length)];
+        document.getElementById('dailyPoem').innerHTML = `<span class="v-m">${p.m}</span><span class="v-kn">${p.kn}</span><span class="v-km">${p.km}</span><span class="v-e">${p.e}</span>`;
+    }
+    show('home');
+}
+
+function startMode(m) {
+    currentMode = m; show('game');
+    document.getElementById('langUI').style.display = m==='lang'?'block':'none';
+    document.getElementById('quizUI').style.display = m!=='lang'?'block':'none';
+    if(m==='lang'){
+        let w = words[Math.floor(Math.random()*words.length)]; currentAns = w;
+        let core = w.slice(0,-2).split('').reverse().join('');
+        document.getElementById('scrambled').innerText = core + w.slice(-2);
+        document.getElementById('ans').value = "";
+    } else {
+        let pool = m==='movies'?movies:history; 
+        if(pool.length === 0) { goHome(); return; }
+        let i = pool[Math.floor(Math.random()*pool.length)];
+        currentAns = i.a; document.getElementById('qText').innerText = i.q;
+        let h = ""; [...i.o].sort(()=>Math.random()-0.5).forEach(o => { h += `<button style="background:white; color:var(--text); border:1px solid #ddd; margin-bottom:10px" onclick="finish('${o===currentAns}')">${o}</button>`; });
+        document.getElementById('opts').innerHTML = h;
+    }
+}
+
+function checkAnswer() { finish(document.getElementById('ans').value.toLowerCase().trim() === currentAns.toLowerCase()); }
+
+function finish(correct) {
+    show('result'); 
+    const p = library.length > 0 ? library[Math.floor(Math.random()*library.length)] : {m:"", kn:"", km:"", e:""};
+    if(String(correct) === 'true') {
+        let state = JSON.parse(localStorage.getItem('pari_v7'));
+        if(!state[currentMode]) {
+            let pts = parseInt(localStorage.getItem('pari_pts') || 0) + 100;
+            localStorage.setItem('pari_pts', pts);
+            document.getElementById('ptsDisp').innerText = pts;
+        }
+        state[currentMode] = true; localStorage.setItem('pari_v7', JSON.stringify(state));
+        document.getElementById('resH').innerText = "Correct! ✨";
+        document.getElementById('resPoem').innerHTML = `<span class="v-m">${p.m}</span><span class="v-kn">${p.kn}</span><span class="v-km">${p.km}</span><span class="v-e">${p.e}</span>`;
+    } else {
+        document.getElementById('resH').innerText = "Try Again 🌸"; 
+        document.getElementById('resPoem').innerText = "Almost there! Focus and try again.";
+    }
+}
+
+function updateTimer() { let diff = new Date().setHours(24,0,0,0) - new Date(); let h = Math.floor(diff/3600000).toString().padStart(2,'0'); let m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0'); let s = Math.floor((diff%60000)/1000).toString().padStart(2,'0'); document.getElementById('countdown').innerText = `${h}:${m}:${s}`; }
+function goHome() { updateMenu(); }
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+init();
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
